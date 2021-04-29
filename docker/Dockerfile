@@ -1,19 +1,33 @@
-FROM ubuntu:16.04
-RUN apt-get update && apt-get install -y \
-    build-essential software-properties-common\
-    libboost-dev libboost-serialization-dev libssl-dev \
-    cmake vim\
+FROM ubuntu:20.04
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+  && apt-get -y upgrade \
+  && apt-get install -y --no-install-recommends \
+    build-essential \
+    cmake \
+    gdal-bin \
+    libboost-dev \
+    libboost-serialization-dev \
+    libbz2-dev \
+    libexpat1-dev \
+    libgdal-dev \
+    libssl-dev \
+    python-dev \
+    swig \
     wget \
-    make libbz2-dev libexpat1-dev swig python-dev
-RUN add-apt-repository -y ppa:ubuntugis/ppa && apt-get -q update
-RUN apt-get -y install gdal-bin libgdal-dev
-RUN mkdir -p /fmm
-COPY . /fmm
-WORKDIR /fmm
-RUN rm -rf build
-RUN mkdir -p build && \
-    cd build && \
-    cmake .. && \
-    make install
-EXPOSE 8080
-CMD
+  && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /build-phase
+COPY . ./
+RUN mkdir -p build \
+  && cd build \
+  && cmake .. \
+  && make -j4 \
+  && make install
+RUN rm -r /build-phase
+
+RUN useradd --create-home appuser
+WORKDIR /home/appuser
+USER appuser
