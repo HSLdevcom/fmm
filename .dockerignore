@@ -1,0 +1,6 @@
+.git
+.gitignore
+.github
+.travis.yml
+build
+travis_install_dependency.sh
